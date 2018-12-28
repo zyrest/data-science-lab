@@ -1,36 +1,30 @@
-# Restaurant Site Selection (Python)
-
-# prepare for Python version 3x features and functions
-from __future__ import division, print_function
-
-# import packages for analysis and modeling
-import pandas as pd  # data frame operations
 import numpy as np  # arrays and math functions
-import statsmodels.api as sm  # statistical models (including regression)
+import pandas as pd  # data frame operations
 import statsmodels.formula.api as smf  # statistical models (including regression)
 
-# read data for Studenmund's Restaurants
-# creating data frame restdata
+# 读取饭店数据 csv 文件，创建 pandas data frame
 restdata = pd.read_csv('studenmunds_restaurants.csv')
 
 # print the first five rows of the data frame
-print(pd.DataFrame.head(restdata))
+# print(pd.DataFrame.head(restdata))
 
-# specify regression model
+# 回归模型
 my_model = str('sales ~ competition + population + income')
 
-# fit the model to the data
+# 在饭店数据上使用线性回归
 my_model_fit = smf.ols(my_model, data=restdata).fit()
-# summary of model fit to the training set
+
 print(my_model_fit.summary())
-# predictions from the model fit to the data for current stores
+
+# 获取预测结果
 restdata['predict_sales'] = my_model_fit.fittedvalues
 
-# compute the proportion of response variance accounted for
-print('\nProportion of Test Set Variance Accounted for: ',
+# 计算两列值的相关系数，默认用的是pearson相关系数
+print()
+print('Proportion of Test Set Variance Accounted for: ',
       round(np.power(restdata['sales'].corr(restdata['predict_sales']), 2), 3))
 
-# define DataFrame of sites for new restaurants
+# 定义三家新饭店的数据
 sites_data = {'sales': [0, 0, 0],
               'competition': [2, 3, 5],
               'population': [50000, 200000, 220000],
@@ -41,4 +35,5 @@ sites = pd.DataFrame(sites_data)
 # obtain predicted sales for the new restaurants
 # rounding to the nearest dollar
 sites['sales_pred'] = my_model_fit.predict(sites)
-print('\nNew sites with predicted sales', sites, '\n')
+print('\nNew sites with predicted sales')
+print(sites)
