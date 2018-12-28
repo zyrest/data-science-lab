@@ -71,7 +71,7 @@ def draw_degree_chart(G, name, distribution):
     else:
         color = 'g^'
         line = plt.loglog(x, y, color)
-        plt.legend(line, 'a')
+        plt.legend(line, 'after')
     plt.title(name)
     plt.show()
 
