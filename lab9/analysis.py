@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 
 def average_deg(G, name):
     d = nx.degree(G)
-    print('{} 平均度:'.format(name))
-    # print(np.ndarray(list(d.values())).mean())
+    print('{} 平均度: {}'.format(name, np.array(list([i[1] for i in d])).mean()))
 
 
 def largest_com(G, name):
@@ -42,7 +41,7 @@ def cumlutive_degree(G):
     degree = []
     list = G.degree()
     for node in list:
-        degree.append(list[node])
+        degree.append(node[1])
     xs = degree
 
     dist_keys = range(min(xs), max(xs)+1)
@@ -59,19 +58,23 @@ def cumlutive_degree(G):
     return pdf
 
 
-def draw_degree_chart(G, name, distribution):
-    degree = distribution
-    y = np.array(list(degree.values()))
-    y = y / y[0]
-    x = range(len(degree))
-    if 'b' in name:
-        color = 'r^'
-        line = plt.loglog(x, y, color)
-        plt.legend(line, 'before')
-    else:
-        color = 'g^'
-        line = plt.loglog(x, y, color)
-        plt.legend(line, 'after')
+def draw_degree_chart(G1, G2, name):
+    degree1 = cumlutive_degree(G1)
+    y1 = np.array(list(degree1.values()))
+    y1 = y1 / y1[0]
+    x1 = range(len(degree1))
+    color = 'r^'
+    line = plt.loglog(x1, y1, color)
+    plt.legend(line, 'before')
+
+    degree2 = cumlutive_degree(G2)
+    y2 = np.array(list(degree2.values()))
+    y2 = y2 / y2[0]
+    x2 = range(len(degree2))
+    color = 'g^'
+    line = plt.loglog(x2, y2, color)
+    plt.legend(line, 'after')
+
     plt.title(name)
     plt.show()
 
@@ -83,4 +86,23 @@ if __name__ == '__main__':
     G_jp_bef = nx.read_gml('./data/lab9_jp-before.gml')
     G_jp_aft = nx.read_gml('./data/lab9_jp-after.gml')
 
-    average_clu(G_en_bef, 'en_before')
+    average_deg(G_en_bef, 'EN average degree before earthquake')
+    average_deg(G_en_aft, 'EN average degree after earthquake')
+    average_deg(G_jp_bef, 'JP average degree before earthquake')
+    average_deg(G_jp_aft, 'JP average degree after earthquake')
+
+    largest_com(G_en_bef, 'EN largest components before earthquake')
+    largest_com(G_en_aft, 'EN largest components after earthquake')
+    largest_com(G_jp_bef, 'JP largest components before earthquake')
+    largest_com(G_jp_aft, 'JP largest components after earthquake')
+
+    average_clu(G_en_bef, 'EN average cluster before earthquake')
+    average_clu(G_en_aft, 'EN average cluster after earthquake')
+    average_clu(G_jp_bef, 'JP average cluster before earthquake')
+    average_clu(G_jp_aft, 'JP average cluster after earthquake')
+
+    individual_degree(G_en_bef, G_en_aft, "EN individual degree")
+    individual_degree(G_jp_bef, G_jp_aft, "JP individual degree")
+
+    draw_degree_chart(G_en_bef, G_en_aft, "EN cumlutive degree")
+    draw_degree_chart(G_jp_bef, G_jp_aft, "JP cumlutive degree")
