@@ -1,51 +1,50 @@
-from lab1 import db
-from bs4 import BeautifulSoup
-
 import requests
+import pandas as pd
 
-url_suffix = 'https://steamcn.com/suid-'
+from lab1 import jobs, job_detail, com_detail
 
 
-def store_user_info(limits):
-    for uid in range(5000, limits):
-        try:
-            ans = dict()
-            ans['uid'] = uid
-            url = url_suffix + str(uid)
-            html = requests.get(url).content.decode('utf-8')
-            soup = BeautifulSoup(html, 'lxml')
-            table = soup.select_one('#ct > div > div.bm.bw0 > div > div.bm_c.u_profile')
+def sxs_crawl(pages=30, kw='数据挖掘', c='全国'):
+    list_urls = ["https://iosapi.shixiseng.com/app/interns/search?c={}&d=&ft=&i=&k={}"
+                 "&m=&page={}&s=-0&st=&t=zj&x=&z=".format(c, kw, page) for page in range(pages)]
+    job_list_data = []
+    for url in list_urls:
+        response = requests.get(url)
+        if response.json()['msg']:
+            job_list_data.extend(response.json()['msg'])
+        else:
+            break
+    jobs.insert_many(job_list_data)
+    job_list = pd.DataFrame(job_list_data)
+    # job_list.to_csv('./job_list.csv', index=False)
+    print('职位信息爬取完毕！')
 
-            datas = table.select('div.pbm.mbm.bbda.cl')
-            infos = datas[0]
-            active = table.find('h2', class_='mbn', text='活跃概况').parent
-            analysis = table.select_one('#psts')
+    # 职位详情ID爬取
+    uuids = list(job_list['uuid'])
+    job_detailed_url = ['https://iosapi.shixiseng.com/app/intern/info?uuid={}'.format(uuid) for uuid in uuids]
 
-            name = infos.select_one('h2').contents[0].strip()
-            sex = infos.select('ul')[3].select('li')[0].contents[1].strip()
-            ans['姓名'] = name
-            ans['性别'] = sex
+    job_detailed_data = []
+    for url in job_detailed_url:
+        response = requests.get(url)
+        job_detailed_data.append(response.json()['msg'])
+    job_detail.insert_many(job_detailed_data)
+    job_detailed = pd.DataFrame(job_detailed_data)
+    # job_detailed.to_csv('./job_detailed.csv', index=False)
+    print('详细信息爬取完毕！')
 
-            title = active.select_one('ul > li > span > a > font').contents[0].strip()
-            ans['头衔'] = title
-            act_ul = active.select_one('#pbbs').select('li')
-            for li in act_ul:
-                key = li.select_one('em').text
-                value = li.contents[1].strip()
-                ans[key] = value
+    # 公司信息爬取
+    cuuids = list(job_detailed['cuuid'])
+    com_detailed_url = ['https://iosapi.shixiseng.com/app/company/info?uuid={}'.format(cuuid) for cuuid in cuuids]
+    com_detailed_data = []
+    for url in com_detailed_url:
+        response = requests.get(url)
+        com_detailed_data.append(response.json()['msg'])
+    # com_detailed = pd.DataFrame(com_detailed_data)
+    com_detail.insert_many(com_detailed_data)
+    # com_detailed.to_csv('./com_detailed.csv', index=False)
 
-            ana_ul = analysis.select_one('ul').select('li')
-            for li in ana_ul:
-                key = li.select_one('em').text
-                value = li.contents[1].strip()
-                ans[key] = value
-
-            print(ans)
-            db.insert_one(ans)
-        except:
-            continue
+    print('Successfully crawled {} jobs.'.format(job_list.shape[0]))
 
 
 if __name__ == '__main__':
-    user_nums = 900000
-    store_user_info(user_nums)
+    sxs_crawl(pages=70, kw='大数据', c='全国')
