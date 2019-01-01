@@ -7,7 +7,7 @@ url_suffix = 'https://steamcn.com/suid-'
 
 
 def store_user_info(limits):
-    for uid in range(1, limits):
+    for uid in range(5000, limits):
         try:
             ans = dict()
             ans['uid'] = uid
@@ -47,5 +47,5 @@ def store_user_info(limits):
 
 
 if __name__ == '__main__':
-    user_nums = 400000
+    user_nums = 900000
     store_user_info(user_nums)
