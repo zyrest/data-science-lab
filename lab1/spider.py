@@ -4,7 +4,7 @@ import pandas as pd
 from lab1 import jobs, job_detail, com_detail
 
 
-def sxs_crawl(pages=30, kw='数据挖掘', c='全国'):
+def sxs_crawl(pages=30, kw='大数据', c='全国'):
     list_urls = ["https://iosapi.shixiseng.com/app/interns/search?c={}&d=&ft=&i=&k={}"
                  "&m=&page={}&s=-0&st=&t=zj&x=&z=".format(c, kw, page) for page in range(pages)]
     job_list_data = []
